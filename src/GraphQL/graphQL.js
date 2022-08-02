@@ -6,38 +6,36 @@ const graphqlWithAuth = graphql.defaults({
   },
 });
 
-export const getData = async () => {
-  let data = await graphqlWithAuth(
-    `
-    {
-      repository(owner: "codestates-seb", name: "agora-states-fe") {
-        discussions(first: 10, orderBy: { field: CREATED_AT, direction: ASC }) {
-          totalCount
-          nodes {
+const gql = `query getDiscussions($num:Int) {
+    repository(owner: "codestates-seb", name: "agora-states-fe") {
+      discussions(first: $num) {
+        nodes {
+          id
+          title
+          url
+          bodyHTML
+          author {
+            avatarUrl
+          }
+          createdAt
+          updatedAt
+          answer {
             id
-            title
+            createdAt
             url
-            bodyHTML
             author {
               avatarUrl
             }
-            createdAt
-            updatedAt
-            answer {
-              id
-              createdAt
-              url
-              author {
-                avatarUrl
-              }
-              bodyHTML
-            }
+            bodyHTML
           }
         }
       }
     }
-  `
-  );
-
+  
+}
+`;
+export const getData = async (num = 30) => {
+  let data = await graphqlWithAuth({ query: gql, num }) //
+    .then(res => res.repository.discussions.nodes);
   return data;
 };
